@@ -1,26 +1,29 @@
-REPO="https://api.github.com/repos/remittor/zapret-openwrt/releases/latest"
-DOWNLOAD_DIR="/tmp"
-ARCHIVE_NAME="aarch64_cortex-a53.zip"
+#!/bin/sh
 
-# Получаем ссылку на архив
-URL=$(wget -qO- "$REPO" | grep -oP 'https://[^"]*'"$ARCHIVE_NAME"')
+# Создаем временную папку
+TMP_DIR="/tmp/zaprettmp"
+mkdir -p "$TMP_DIR"
 
-if [ -z "$URL" ]; then
-    echo "Не удалось найти архив $ARCHIVE_NAME"
+# Получаем ссылку на последний релиз
+LATEST_URL="https://github.com/remittor/zapret-openwrt/releases/latest"
+ARCHIVE_URL=$(curl -s -L "$LATEST_URL" | grep -oE 'https://github.com/remittor/zapret-openwrt/releases/download/[^"]+aarch64_cortex-a53[^"/]+' | head -n 1)
+
+# Проверяем, что нашли нужный архив
+if [ -z "$ARCHIVE_URL" ]; then
+    echo "Не найден архив для aarch64_cortex-a53"
     exit 1
 fi
 
-# Скачиваем архив
-FILENAME="$DOWNLOAD_DIR/$ARCHIVE_NAME"
-echo "Скачивание $ARCHIVE_NAME..."
-wget -q -O "$FILENAME" "$URL"
+# Определяем имя архива
+ARCHIVE_NAME=$(basename "$ARCHIVE_URL")
 
-# Распаковываем архив
-unzip -o "$FILENAME" -d "$DOWNLOAD_DIR"
+# Качаем архив
+wget -O "$TMP_DIR/$ARCHIVE_NAME" "$ARCHIVE_URL"
 
-# Устанавливаем пакеты
-opkg install $DOWNLOAD_DIR/zapret_*.ipk
-opkg install $DOWNLOAD_DIR/luci-app-zapret*.ipk
+# Распаковываем
+unzip "$TMP_DIR/$ARCHIVE_NAME" -d "$TMP_DIR"
 
-# Удаляем загруженные файлы
-rm -rf "$DOWNLOAD_DIR/$ARCHIVE_NAME"
+# Опционально: удаляем архив после распаковки
+rm "$TMP_DIR/$ARCHIVE_NAME"
+
+echo "Файлы извлечены в $TMP_DIR"
