@@ -1,6 +1,6 @@
 REPO="https://api.github.com/repos/remittor/zapret-openwrt/releases/latest"
 DOWNLOAD_DIR="/tmp"
-ARCHIVE_NAME="aarch64_cortex-a53.zip"
+ARCHIVE_NAME="*aarch64_cortex-a53.zip"
 
 # Получаем ссылку на архив
 URL=$(wget -qO- "$REPO" | grep -oP 'https://[^"]*'"$ARCHIVE_NAME"')
