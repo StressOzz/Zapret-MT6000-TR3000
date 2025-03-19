@@ -1,29 +1,32 @@
 #!/bin/sh
 
+# Временная папка
+TEMP_DIR="/tmp/zaprettmp"
+
 # Создаем временную папку
-TMP_DIR="/tmp/zaprettmp"
-mkdir -p "$TMP_DIR"
+mkdir -p "$TEMP_DIR"
 
-# Получаем ссылку на последний релиз
-LATEST_URL="https://github.com/remittor/zapret-openwrt/releases/latest"
-ARCHIVE_URL=$(curl -s -L "$LATEST_URL" | grep -oE 'https://github.com/remittor/zapret-openwrt/releases/download/[^"]+aarch64_cortex-a53[^"/]+' | head -n 1)
+# Переходим в временную папку
+cd "$TEMP_DIR"
 
-# Проверяем, что нашли нужный архив
-if [ -z "$ARCHIVE_URL" ]; then
-    echo "Не найден архив для aarch64_cortex-a53"
+# Получаем URL последнего релиза
+RELEASE_URL=$(curl -s https://api.github.com/repos/remittor/zapret-openwrt/releases/latest | grep -o 'https://.*aarch64_cortex-a53.*\.tar\.gz')
+
+# Проверяем, что URL был найден
+if [ -z "$RELEASE_URL" ]; then
+    echo "Не удалось найти архив с aarch64_cortex-a53 в названии."
     exit 1
 fi
 
-# Определяем имя архива
-ARCHIVE_NAME=$(basename "$ARCHIVE_URL")
+# Скачиваем архив
+echo "Скачиваем архив: $RELEASE_URL"
+curl -L -o zapret.tar.gz "$RELEASE_URL"
 
-# Качаем архив
-wget -O "$TMP_DIR/$ARCHIVE_NAME" "$ARCHIVE_URL"
+# Распаковываем архив
+echo "Распаковываем архив..."
+tar -xzf zapret.tar.gz
 
-# Распаковываем
-unzip "$TMP_DIR/$ARCHIVE_NAME" -d "$TMP_DIR"
+# Очищаем временные файлы
+rm zapret.tar.gz
 
-# Опционально: удаляем архив после распаковки
-rm "$TMP_DIR/$ARCHIVE_NAME"
-
-echo "Файлы извлечены в $TMP_DIR"
+echo "Архив успешно скачан и распакован в $TEMP_DIR"
