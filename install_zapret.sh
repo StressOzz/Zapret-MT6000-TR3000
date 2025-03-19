@@ -6,7 +6,7 @@ mkdir -p "$TMP_DIR"
 
 # Получаем ссылку на последний релиз
 LATEST_URL="https://github.com/remittor/zapret-openwrt/releases/latest"
-ARCHIVE_URL=$(curl -s -L "$LATEST_URL" | grep -oE 'https://github.com/remittor/zapret-openwrt/releases/download/[^"]+aarch64_cortex-a53[^"/]+' | head -n 1)
+ARCHIVE_URL=$(curl -s -L "$LATEST_URL" | grep -oE 'https://github.com/remittor/zapret-openwrt/releases/download/v70.20250213/zapret_v70.20250213_aarch64_cortex-a53.zip' | head -n 1)
 
 # Проверяем, что нашли нужный архив
 if [ -z "$ARCHIVE_URL" ]; then
